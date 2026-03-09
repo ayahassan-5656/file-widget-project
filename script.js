@@ -22,13 +22,6 @@ function formatDate(dateString) {
 async function uploadFile() {
   try {
     const input = document.getElementById("fileInput");
-    const uniqueInput = document.getElementById("uniqueFileKey");
-    const uniqueFileKey = uniqueInput.value.trim();
-
-    if (!uniqueFileKey) {
-      showStatus("Please enter the SAC File ID first.", "error");
-      return;
-    }
 
     if (!input.files.length) {
       showStatus("Please select a file first.", "error");
@@ -37,8 +30,8 @@ async function uploadFile() {
 
     const formData = new FormData();
     formData.append("file", input.files[0]);
-    formData.append("uniqueFileKey", uniqueFileKey);
-
+    formData.append("uniqueFileKey", Date.now().toString());
+    
     const res = await fetch(`${API}/upload`, {
       method: "POST",
       body: formData
