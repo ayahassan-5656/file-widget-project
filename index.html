@@ -51,20 +51,13 @@
       align-items: center;
     }
 
-    .upload-row input[type="text"] {
-      min-width: 280px;
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      background: #fff;
-    }
-
     input[type="file"] {
       padding: 10px;
       border: 1px solid #d1d5db;
       border-radius: 10px;
       background: #fff;
+      min-width: 280px;
+      flex: 1;
     }
 
     .search-row {
@@ -236,18 +229,8 @@
       <p class="subtitle">Upload, download, and delete files from MongoDB.</p>
 
       <div class="upload-row">
-  <input type="file" id="fileInput" />
-
-  <button class="btn-upload" onclick="uploadFile()">
-    Upload File
-  </button>
-</div>/>
-
         <input type="file" id="fileInput" />
-
-        <button class="btn-upload" onclick="uploadFile()">
-          Upload File
-        </button>
+        <button class="btn-upload" onclick="uploadFile()">Upload File</button>
       </div>
 
       <div id="statusMessage" class="status"></div>
