@@ -31,7 +31,7 @@ async function uploadFile() {
     const formData = new FormData();
     formData.append("file", input.files[0]);
     formData.append("uniqueFileKey", Date.now().toString());
-    
+
     const res = await fetch(`${API}/upload`, {
       method: "POST",
       body: formData
@@ -45,10 +45,11 @@ async function uploadFile() {
     }
 
     showStatus(data.message || "File uploaded successfully.", "success");
-    input.value = "";
-    uniqueInput.value = "";
-    loadFiles();
+
+    input.value = "";   // clear file input
+    loadFiles();        // refresh list
   } catch (error) {
+    console.error(error);
     showStatus("Something went wrong while uploading.", "error");
   }
 }
@@ -67,8 +68,8 @@ async function loadFiles() {
 function renderFiles(files) {
   const table = document.getElementById("fileTable");
   const count = document.getElementById("fileCount");
-  table.innerHTML = "";
 
+  table.innerHTML = "";
   count.textContent = `${files.length} file${files.length !== 1 ? "s" : ""}`;
 
   if (!files.length) {
