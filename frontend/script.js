@@ -1,4 +1,4 @@
-const API = "https://file-widget-project.onrender.com/api/files";";
+const API = "https://file-widget-project-production.up.railway.app/api/files";
 let allFiles = [];
 
 function showStatus(message, type = "success") {
