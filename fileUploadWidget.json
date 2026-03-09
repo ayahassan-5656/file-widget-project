@@ -1,1 +1,99 @@
-
+{
+  "eula": "",
+  "license": "",
+  "id": "com.ayahassan.sac.file_manager",
+  "version": "1.0.0",
+  "name": "SAC File Manager",
+  "newInstancePrefix": "SACFileManager",
+  "description": "Custom SAC widget for uploading, listing, downloading, and deleting files with MongoDB backend.",
+  "icon": "",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "com-ayahassan-sac-file-manager",
+      "url": "/fileUploadWidget.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "default": "File Manager"
+    },
+    "apiBaseUrl": {
+      "type": "string",
+      "default": "https://file-widget-project-production.up.railway.app/api/files"
+    },
+    "uniqueFileKey": {
+      "type": "string",
+      "default": ""
+    },
+    "showSearch": {
+      "type": "boolean",
+      "default": true
+    },
+    "maxHeight": {
+      "type": "integer",
+      "default": 320
+    }
+  },
+  "methods": {
+    "setUniqueFileKey": {
+      "description": "Sets the SAC-generated file context key.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Unique context key generated from SAC selection."
+        }
+      ],
+      "body": "this.uniqueFileKey = key;"
+    },
+    "getUniqueFileKey": {
+      "description": "Gets the current SAC-generated file context key.",
+      "parameters": [],
+      "returnType": "string",
+      "body": "return this.uniqueFileKey;"
+    },
+    "setApiBaseUrl": {
+      "description": "Sets the backend API base URL.",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Backend API base URL."
+        }
+      ],
+      "body": "this.apiBaseUrl = url;"
+    },
+    "getApiBaseUrl": {
+      "description": "Gets the backend API base URL.",
+      "parameters": [],
+      "returnType": "string",
+      "body": "return this.apiBaseUrl;"
+    },
+    "refreshFiles": {
+      "description": "Refreshes the file list from the backend.",
+      "parameters": [],
+      "body": "if (this.refreshFilesInternal) { this.refreshFilesInternal(); }"
+    }
+  },
+  "events": {
+    "onUploadSuccess": {
+      "description": "Called when a file upload succeeds."
+    },
+    "onUploadError": {
+      "description": "Called when a file upload fails."
+    },
+    "onDeleteSuccess": {
+      "description": "Called when a file delete succeeds."
+    },
+    "onDeleteError": {
+      "description": "Called when a file delete fails."
+    },
+    "onFilesLoaded": {
+      "description": "Called when the file list is loaded."
+    }
+  }
+}
