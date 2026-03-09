@@ -236,11 +236,12 @@
       <p class="subtitle">Upload, download, and delete files from MongoDB.</p>
 
       <div class="upload-row">
-        <input
-          type="text"
-          id="uniqueFileKey"
-          placeholder="Enter SAC File ID"
-        />
+  <input type="file" id="fileInput" />
+
+  <button class="btn-upload" onclick="uploadFile()">
+    Upload File
+  </button>
+</div>/>
 
         <input type="file" id="fileInput" />
 
