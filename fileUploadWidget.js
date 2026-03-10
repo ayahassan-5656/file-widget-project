@@ -34,6 +34,27 @@ class SACFileManager extends HTMLElement {
     this.loadFiles();
   }
 
+setUniqueFileKey(key) {
+  this._uniqueFileKey = key || "";
+}
+
+getUniqueFileKey() {
+  return this._uniqueFileKey;
+}
+
+setApiBaseUrl(url) {
+  this._apiBaseUrl = url || this._apiBaseUrl;
+  this.loadFiles();
+}
+
+getApiBaseUrl() {
+  return this._apiBaseUrl;
+}
+
+refreshFiles() {
+  this.loadFiles();
+}
+  
   set uniqueFileKey(value) {
     this._uniqueFileKey = value || "";
   }
