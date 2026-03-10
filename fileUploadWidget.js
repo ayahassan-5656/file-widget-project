@@ -13,54 +13,8 @@ class SACFileManager extends HTMLElement {
     this.render();
   }
 
-  static get observedAttributes() {
-    return ["title", "apibaseurl", "uniquefilekey", "showsearch", "maxheight"];
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue === newValue) return;
-
-    if (name === "title") this._title = newValue || "File Manager";
-    if (name === "apibaseurl") this._apiBaseUrl = newValue || this._apiBaseUrl;
-    if (name === "uniquefilekey") this._uniqueFileKey = newValue || "";
-    if (name === "showsearch") this._showSearch = newValue !== "false";
-    if (name === "maxheight") this._maxHeight = parseInt(newValue || "320", 10);
-
-    this.render();
-    this.loadFiles();
-  }
-
   connectedCallback() {
     this.loadFiles();
-  }
-
-setUniqueFileKey(key) {
-  this._uniqueFileKey = key || "";
-}
-
-getUniqueFileKey() {
-  return this._uniqueFileKey;
-}
-
-setApiBaseUrl(url) {
-  this._apiBaseUrl = url || this._apiBaseUrl;
-  this.loadFiles();
-}
-
-getApiBaseUrl() {
-  return this._apiBaseUrl;
-}
-
-refreshFiles() {
-  this.loadFiles();
-}
-  
-  set uniqueFileKey(value) {
-    this._uniqueFileKey = value || "";
-  }
-
-  get uniqueFileKey() {
-    return this._uniqueFileKey;
   }
 
   setUniqueFileKey(key) {
@@ -80,24 +34,51 @@ refreshFiles() {
     return this._apiBaseUrl;
   }
 
+  refreshFiles() {
+    this.loadFiles();
+  }
+
+  showStatus(message, type = "success") {
+    const status = this.shadowRoot.getElementById("statusMessage");
+    if (!status) return;
+
+    status.textContent = message;
+    status.className = `status ${type}`;
+    status.style.display = "block";
+  }
+
+  formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  formatDate(dateString) {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleString();
+  }
+
+  escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   async uploadFile() {
     try {
-      const fileInput = this.shadowRoot.getElementById("fileInput");
-      const status = this.shadowRoot.getElementById("statusMessage");
+      const input = this.shadowRoot.getElementById("fileInput");
 
-      if (!this._uniqueFileKey || !this._uniqueFileKey.trim()) {
-        this.showStatus("No SAC context ID was provided.", "error");
-        return;
-      }
-
-      if (!fileInput.files.length) {
+      if (!input || !input.files.length) {
         this.showStatus("Please select a file first.", "error");
         return;
       }
 
       const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
-      formData.append("uniqueFileKey", this._uniqueFileKey);
+      formData.append("file", input.files[0]);
+      formData.append("uniqueFileKey", this._uniqueFileKey || Date.now().toString());
 
       const res = await fetch(`${this._apiBaseUrl}/upload`, {
         method: "POST",
@@ -112,11 +93,12 @@ refreshFiles() {
         return;
       }
 
-      fileInput.value = "";
+      input.value = "";
       this.showStatus(data.message || "File uploaded successfully.", "success");
       this.dispatchEvent(new CustomEvent("onUploadSuccess", { detail: data }));
       this.loadFiles();
     } catch (error) {
+      console.error("Upload error:", error);
       this.showStatus("Something went wrong while uploading.", "error");
       this.dispatchEvent(new CustomEvent("onUploadError", { detail: error }));
     }
@@ -131,6 +113,7 @@ refreshFiles() {
       this.renderFiles(this._allFiles);
       this.dispatchEvent(new CustomEvent("onFilesLoaded", { detail: this._allFiles }));
     } catch (error) {
+      console.error("Load files error:", error);
       this.showStatus("Failed to load files.", "error");
     }
   }
@@ -138,6 +121,7 @@ refreshFiles() {
   renderFiles(files) {
     const table = this.shadowRoot.getElementById("fileTable");
     const count = this.shadowRoot.getElementById("fileCount");
+
     if (!table || !count) return;
 
     table.innerHTML = "";
@@ -152,18 +136,18 @@ refreshFiles() {
       return;
     }
 
-    files.forEach((file) => {
-      const row = document.createElement("tr");
-      const fileId = file.metadata?.uniqueFileKey || "-";
+    files.forEach((item) => {
+      const fileId = item.metadata?.uniqueFileKey || "-";
 
+      const row = document.createElement("tr");
       row.innerHTML = `
         <td>${this.escapeHtml(fileId)}</td>
-        <td>${this.formatFileSize(file.length || 0)}</td>
-        <td>${this.formatDate(file.uploadDate)}</td>
+        <td>${this.formatFileSize(item.length || 0)}</td>
+        <td>${this.formatDate(item.uploadDate)}</td>
         <td>
           <div class="actions">
-            <button class="btn-download" data-id="${file._id}">Download</button>
-            <button class="btn-delete" data-id="${file._id}" data-fileid="${this.escapeAttribute(fileId)}">Delete</button>
+            <button class="btn-download" data-id="${item._id}">Download</button>
+            <button class="btn-delete" data-id="${item._id}" data-fileid="${this.escapeHtml(fileId)}">Delete</button>
           </div>
         </td>
       `;
@@ -182,11 +166,11 @@ refreshFiles() {
 
   filterFiles() {
     const input = this.shadowRoot.getElementById("searchInput");
-    const value = (input?.value || "").trim().toLowerCase();
+    const searchValue = (input?.value || "").trim().toLowerCase();
 
-    const filtered = this._allFiles.filter((file) => {
-      const fileId = (file.metadata?.uniqueFileKey || "").toLowerCase();
-      return fileId.includes(value);
+    const filtered = this._allFiles.filter((item) => {
+      const fileId = (item.metadata?.uniqueFileKey || "").toLowerCase();
+      return fileId.includes(searchValue);
     });
 
     this.renderFiles(filtered);
@@ -217,42 +201,10 @@ refreshFiles() {
       this.dispatchEvent(new CustomEvent("onDeleteSuccess", { detail: data }));
       this.loadFiles();
     } catch (error) {
+      console.error("Delete error:", error);
       this.showStatus("Something went wrong while deleting.", "error");
       this.dispatchEvent(new CustomEvent("onDeleteError", { detail: error }));
     }
-  }
-
-  showStatus(message, type = "success") {
-    const status = this.shadowRoot.getElementById("statusMessage");
-    if (!status) return;
-
-    status.textContent = message;
-    status.className = `status ${type}`;
-    status.style.display = "block";
-  }
-
-  formatFileSize(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  formatDate(dateString) {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleString();
-  }
-
-  escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
-
-  escapeAttribute(value) {
-    return String(value).replaceAll('"', "&quot;");
   }
 
   render() {
@@ -261,10 +213,6 @@ refreshFiles() {
         * {
           box-sizing: border-box;
           font-family: Arial, sans-serif;
-        }
-
-        body {
-          margin: 0;
         }
 
         .container {
@@ -313,10 +261,7 @@ refreshFiles() {
 
         .search-row {
           display: ${this._showSearch ? "flex" : "none"};
-          justify-content: space-between;
-          align-items: center;
           gap: 12px;
-          flex-wrap: wrap;
           margin-top: 14px;
           margin-bottom: 12px;
         }
@@ -403,10 +348,6 @@ refreshFiles() {
           z-index: 1;
         }
 
-        td {
-          font-size: 14px;
-        }
-
         .actions {
           display: flex;
           gap: 8px;
@@ -460,11 +401,7 @@ refreshFiles() {
           </div>
 
           <div class="search-row">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search by File ID..."
-            />
+            <input type="text" id="searchInput" placeholder="Search by File ID..." />
           </div>
 
           <div class="table-scroll">
@@ -489,4 +426,4 @@ refreshFiles() {
   }
 }
 
-customElements.define("file_actions", file-actions-manager);
+customElements.define("file-actions-manager", SACFileManager);
