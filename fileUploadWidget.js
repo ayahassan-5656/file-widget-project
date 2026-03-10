@@ -468,4 +468,4 @@ class SACFileManager extends HTMLElement {
   }
 }
 
-customElements.define("com-ayahassan-sac-file-manager", SACFileManager);
+customElements.define("file_actions", file-actions-manager);
