@@ -44,39 +44,32 @@
       "parameters": [
         {
           "name": "key",
-          "type": "string",
-          "description": "Unique context key generated from SAC selection."
+          "type": "string"
         }
-      ],
-      "body": "this.setAttribute('uniquefilekey', key);"
+      ]
     },
     "getUniqueFileKey": {
       "description": "Gets the current SAC-generated file context key.",
       "parameters": [],
-      "returnType": "string",
-      "body": "return this.getAttribute('uniquefilekey') || '';"
+      "returnType": "string"
     },
     "setApiBaseUrl": {
       "description": "Sets the backend API base URL.",
       "parameters": [
         {
           "name": "url",
-          "type": "string",
-          "description": "Backend API base URL."
+          "type": "string"
         }
-      ],
-      "body": "this.setAttribute('apibaseurl', url);"
+      ]
     },
     "getApiBaseUrl": {
       "description": "Gets the backend API base URL.",
       "parameters": [],
-      "returnType": "string",
-      "body": "return this.getAttribute('apibaseurl') || '';"
+      "returnType": "string"
     },
     "refreshFiles": {
       "description": "Refreshes the file list from the backend.",
-      "parameters": [],
-      "body": "this.dispatchEvent(new CustomEvent('refreshFiles'));"
+      "parameters": []
     }
   },
   "events": {
