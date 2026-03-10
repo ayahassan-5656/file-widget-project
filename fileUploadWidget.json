@@ -11,7 +11,7 @@
     {
       "kind": "main",
       "tag": "file-actions-manager",
-      "url": "/fileUploadWidget.js",
+      "url": "fileUploadWidget.js",
       "integrity": "",
       "ignoreIntegrity": true
     }
