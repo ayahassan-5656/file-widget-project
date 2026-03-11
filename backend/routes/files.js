@@ -17,7 +17,6 @@ const allowedExtensions = [
 ];
 
 const maxFileSize = 50 * 1024 * 1024; // 50 MB
-
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -30,26 +29,23 @@ function getExtension(filename) {
   return lastDot === -1 ? "" : filename.slice(lastDot).toLowerCase();
 }
 
-/* UPLOAD FILE */
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
+    const uniqueFileKey = req.body.uniqueFileKey;
+
+    if (!uniqueFileKey || uniqueFileKey.trim() === "") {
+      return res.status(400).json({ message: "Missing unique file key" });
+    }
+
     const extension = getExtension(req.file.originalname);
 
     if (!allowedExtensions.includes(extension)) {
       return res.status(400).json({
-        message: `Invalid file type. Allowed: ${allowedExtensions.join(", ")}`,
-      });
-    }
-
-    const uniqueFileKey = (req.body.uniqueFileKey || "").trim();
-
-    if (!uniqueFileKey) {
-      return res.status(400).json({
-        message: "uniqueFileKey is required",
+        message: `Invalid file type. Allowed: ${allowedExtensions.join(", ")}`
       });
     }
 
@@ -57,16 +53,16 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     const bucket = getBucket();
 
     const existingFile = await db.collection("uploads.files").findOne({
-      "metadata.uniqueFileKey": uniqueFileKey,
+      filename: uniqueFileKey,
     });
 
     if (existingFile) {
       return res.status(409).json({
-        message: `A file with ID "${uniqueFileKey}" already exists. Delete the previous file or change the context.`,
+        message: `A file with ID "${uniqueFileKey}" already exists.`
       });
     }
 
-    const uploadStream = bucket.openUploadStream(req.file.originalname, {
+    const uploadStream = bucket.openUploadStream(uniqueFileKey, {
       contentType: req.file.mimetype,
       metadata: {
         originalName: req.file.originalname,
@@ -80,8 +76,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(201).json({
         message: "File uploaded successfully",
         fileId: uploadStream.id,
-        uniqueFileKey: uniqueFileKey,
-        originalName: req.file.originalname,
+        filename: uniqueFileKey,
       });
     });
 
@@ -99,7 +94,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-/* LIST FILES */
 router.get("/", async (req, res) => {
   try {
     const db = getDB();
@@ -125,7 +119,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* DOWNLOAD FILE */
 router.get("/:id/download", async (req, res) => {
   try {
     const bucket = getBucket();
@@ -159,7 +152,6 @@ router.get("/:id/download", async (req, res) => {
   }
 });
 
-/* DELETE FILE */
 router.delete("/:id", async (req, res) => {
   try {
     const bucket = getBucket();
