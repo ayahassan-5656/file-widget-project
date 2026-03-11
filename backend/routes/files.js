@@ -131,17 +131,31 @@ router.get("/:id/download", async (req, res) => {
       return res.status(404).json({ message: "File not found" });
     }
 
-    res.set("Content-Type", file.contentType || "application/octet-stream");
+    const originalName = file.metadata?.originalName || "";
+    const extension = originalName.lastIndexOf(".") !== -1
+      ? originalName.slice(originalName.lastIndexOf("."))
+      : "";
+
+    const safeBaseName = String(file.filename || "download")
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+      .replace(/\s+/g, "_")
+      .trim();
+
+    const downloadName = `${safeBaseName}${extension}`;
+
+    res.setHeader("Content-Type", file.contentType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="${downloadName}"`);
 
     const downloadStream = bucket.openDownloadStream(fileId);
 
     downloadStream.on("error", (err) => {
       console.error("Download stream error:", err);
-      res.status(500).json({ message: "Download failed" });
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Download failed" });
+      }
     });
 
     downloadStream.pipe(res);
-
   } catch (error) {
     console.error("Download route error:", error);
     res.status(500).json({
@@ -150,7 +164,6 @@ router.get("/:id/download", async (req, res) => {
     });
   }
 });
-
 router.delete("/:id", async (req, res) => {
   try {
     const bucket = getBucket();
