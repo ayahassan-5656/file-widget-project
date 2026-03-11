@@ -131,10 +131,14 @@ router.get("/:id/download", async (req, res) => {
       return res.status(404).json({ message: "File not found" });
     }
 
+    const safeFileName = String(file.filename || "download")
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+      .trim();
+
     res.set("Content-Type", file.contentType || "application/octet-stream");
     res.set(
       "Content-Disposition",
-      `attachment; filename="${file.filename}"`
+      `attachment; filename="${safeFileName}"; filename*=UTF-8''${encodeURIComponent(safeFileName)}`
     );
 
     const downloadStream = bucket.openDownloadStream(fileId);
