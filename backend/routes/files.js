@@ -132,16 +132,18 @@ router.get("/:id/download", async (req, res) => {
     }
 
     const originalName = file.metadata?.originalName || "";
-    const extension = originalName.lastIndexOf(".") !== -1
-      ? originalName.slice(originalName.lastIndexOf("."))
-      : "";
+    const extension =
+      originalName.lastIndexOf(".") !== -1
+        ? originalName.slice(originalName.lastIndexOf("."))
+        : "";
 
-    const safeBaseName = String(file.filename || "download")
-      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
-      .replace(/\s+/g, "_")
+    const baseName = String(file.filename || "download")
+      .replace(/\|/g, "_")           // replace SAC separators
+      .replace(/\s+/g, "_")         // replace spaces
+      .replace(/[<>:"/\\?*]/g, "")  // remove illegal characters
       .trim();
 
-    const downloadName = `${safeBaseName}${extension}`;
+    const downloadName = `${baseName}${extension}`;
 
     res.setHeader("Content-Type", file.contentType || "application/octet-stream");
     res.setHeader("Content-Disposition", `attachment; filename="${downloadName}"`);
@@ -156,6 +158,7 @@ router.get("/:id/download", async (req, res) => {
     });
 
     downloadStream.pipe(res);
+
   } catch (error) {
     console.error("Download route error:", error);
     res.status(500).json({
@@ -164,6 +167,7 @@ router.get("/:id/download", async (req, res) => {
     });
   }
 });
+
 router.delete("/:id", async (req, res) => {
   try {
     const bucket = getBucket();
