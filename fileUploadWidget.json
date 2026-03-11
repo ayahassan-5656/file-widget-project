@@ -1,5 +1,6 @@
 {
   "id": "file_actions",
+  "vendor": "Aya Hassan",
   "version": "1.0.0",
   "name": "File Actions Manager",
   "newInstancePrefix": "FileActionsManager",
@@ -16,12 +17,45 @@
   "properties": {
     "apiBaseUrl": {
       "type": "string",
+      "default": "https://file-widget-project-production.up.railway.app/api/files"
+    },
+    "uniqueFileKey": {
+      "type": "string",
       "default": ""
     }
   },
   "methods": {
+    "setUniqueFileKey": {
+      "description": "Sets the SAC-generated file context key.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string"
+        }
+      ]
+    },
+    "getUniqueFileKey": {
+      "description": "Gets the SAC-generated file context key.",
+      "parameters": [],
+      "returnType": "string"
+    },
+    "setApiBaseUrl": {
+      "description": "Sets the backend API base URL.",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string"
+        }
+      ]
+    },
+    "getApiBaseUrl": {
+      "description": "Gets the backend API base URL.",
+      "parameters": [],
+      "returnType": "string"
+    },
     "refreshFiles": {
-      "description": "Reload files"
+      "description": "Reload files",
+      "parameters": []
     }
   },
   "events": {}
