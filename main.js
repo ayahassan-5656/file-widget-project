@@ -42,17 +42,26 @@ FileActionsManager - SAC Custom Widget
       margin-bottom:8px;
     }
 
-    /* Search row - same style as upload row */
+    /* Search row - fixed layout */
     .search-row {
-      display:grid;
-      grid-template-columns:1fr auto auto;
+      display:flex;
       gap:8px;
       align-items:center;
+      width:100%;
+    }
+
+    /* Fixed width for search input - matches the input above */
+    #searchInput {
+      width:100%;
+      min-width:0;
+      flex: 1;
+      padding:8px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
     }
 
     input[type="text"] {
-      width:100%;
-      min-width:0;
       padding:8px;
       border-radius:8px;
       border:1px solid #ccc;
@@ -86,6 +95,13 @@ FileActionsManager - SAC Custom Widget
     .delete {
       background:#ef4444;
       color:white;
+    }
+
+    /* Buttons container - fixed width to prevent layout shift */
+    .search-buttons {
+      display: flex;
+      gap: 8px;
+      min-width: 228px; /* 110px * 2 + 8px gap */
     }
 
     /* Hide buttons by default */
@@ -153,8 +169,10 @@ FileActionsManager - SAC Custom Widget
           placeholder="ابحث عن ملف لتحميله أو حذفه"
         />
 
-        <button class="download" id="downloadBtn">تحميل</button>
-        <button class="delete" id="deleteBtn">حذف</button>
+        <div class="search-buttons">
+          <button class="download" id="downloadBtn">تحميل</button>
+          <button class="delete" id="deleteBtn">حذف</button>
+        </div>
 
       </div>
 
@@ -378,8 +396,7 @@ FileActionsManager - SAC Custom Widget
         const a = document.createElement("a");
         a.href = url;
         
-        // FIXED: Use the uniqueFileKey from MongoDB as the filename, not the original name
-        // This ensures the downloaded file has the SAC ID as its filename
+        // Use the uniqueFileKey from MongoDB as the filename
         const fileExtension = this._selectedFile.metadata?.originalName?.split('.').pop() || '';
         const fileName = fileExtension ? 
           `${this._selectedFile.metadata?.uniqueFileKey}.${fileExtension}` : 
